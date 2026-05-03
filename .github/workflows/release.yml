@@ -3,7 +3,7 @@ name: Build and Release
 on:
     push:
         tags:
-            - "v*.*.*" # Triggers only on version tags like v1.0.0
+            - "v*.*.*"
 
 jobs:
     build:
@@ -43,17 +43,28 @@ jobs:
 
             - name: Build for Linux
               run: |
-                  odin build . -file -out:game_linux -target:linux_amd64
+                  odin build src/ -file -out:game_linux -target:linux_amd64
 
             - name: Build for Windows
               run: |
-                  odin build . -file -out:game.exe -target:windows_amd64 -vet -disable-assert
+                  odin build src/ -file -out:game.exe -target:windows_amd64 -vet -disable-assert
 
             - name: Prepare Artifacts
               run: |
                   mkdir -p build_output/linux build_output/windows
-                  mv game_linux build_output/linux/
-                  mv game.exe build_output/windows/
+
+                  # Check if the file exists before moving, or find the actual file name
+                  if [ -f "game_linux" ]; then
+                    mv game_linux build_output/linux/
+                  fi
+
+                  if [ -f "game.exe" ]; then
+                    mv game.exe build_output/windows/
+                  else
+                    # Fallback check for alternative Odin output names
+                    # If the build command outputted to a different name, search and copy
+                    find . -maxdepth 1 -name "*.exe" -exec mv {} build_output/windows/ \;
+                  fi
 
             - name: Create GitHub Release
               uses: softprops/action-gh-release@v2
@@ -61,5 +72,5 @@ jobs:
                   files: |
                       build_output/linux/game_linux
                       build_output/windows/game.exe
-                  prerelease: true
+                  prerelease: false
                   draft: false
