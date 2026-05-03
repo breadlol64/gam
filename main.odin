@@ -72,9 +72,9 @@ input :: proc(dt: f32) {
 		m := rl.GetMousePosition()
 		w := rl.GetScreenToWorld2D(m, player.camera)
 		x, y := to_tile_coords(w.x, w.y)
-		if idx, ok := tile_map[1][{x, y}]; ok {
+		if idx, t_ok := tile_map[1][{x, y}]; t_ok {
 			tile := world[1][idx]
-			if def, ok := tile_registry[tile.id]; ok {
+			if def, d_ok := tile_registry[tile.id]; d_ok {
 				if def.breakable &&
 				   slice.contains(def.breakable_with, player.inventory[player.hand].item.id) {
 					unordered_remove(&world[1], idx)
