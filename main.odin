@@ -75,11 +75,6 @@ input :: proc(dt: f32) {
 		if idx, ok := tile_map[1][{x, y}]; ok {
 			tile := world[1][idx]
 			if def, ok := tile_registry[tile.id]; ok {
-				fmt.println(player.inventory[player.hand].item.id)
-				fmt.println(
-					slice.contains(def.breakable_with, player.inventory[player.hand].item.id),
-				)
-				// fmt.println(def.breakable_with)
 				if def.breakable &&
 				   slice.contains(def.breakable_with, player.inventory[player.hand].item.id) {
 					unordered_remove(&world[1], idx)

@@ -1,8 +1,5 @@
 package main
 import "core:fmt"
-import "core:os"
-import "core:path/filepath"
-import "core:strings"
 import rl "vendor:raylib"
 
 item_registry: map[string]ItemDef
