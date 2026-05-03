@@ -1,7 +1,6 @@
 package main
 
 import "core:fmt"
-import "core:math/noise"
 import rl "vendor:raylib"
 
 tex_size :: 16
