@@ -38,3 +38,20 @@ load_tiles :: proc() {
 		fmt.printfln("loaded %s", name)
 	}
 }
+
+draw_tiles :: proc() {
+	for layer in world {
+		for tile in layer {
+			if def, ok := tile_registry[tile.id]; ok {
+
+				rl.DrawTextureEx(
+					def.texture,
+					{f32(tile.x * tex_size * tex_scale), f32(tile.y * tex_size * tex_scale)},
+					0.0,
+					tex_scale,
+					rl.WHITE,
+				)
+			}
+		}
+	}
+}

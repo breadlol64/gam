@@ -84,39 +84,13 @@ draw :: proc(fps: i32, dt: f32, w: i32, h: i32) {
 	rl.BeginMode2D(player.camera)
 	rl.ClearBackground(rl.BLACK)
 
-	for layer in world {
-		for tile in layer {
-			if def, ok := tile_registry[tile.id]; ok {
-
-				rl.DrawTextureEx(
-					def.texture,
-					{f32(tile.x * tex_size * tex_scale), f32(tile.y * tex_size * tex_scale)},
-					0.0,
-					tex_scale,
-					rl.WHITE,
-				)
-			}
-		}
-	}
+	draw_tiles()
 
 	rl.DrawTextureEx(player.texture, {f32(player.x), f32(player.y)}, 0.0, tex_scale, rl.WHITE)
 
 	rl.EndMode2D()
 
-	i := 0
-	for slot in player.inventory {
-		if def, ok := item_registry[slot.item.id]; ok {
-			rl.DrawTextureEx(
-				def.texture,
-				{10, f32(30 + i * 16 * tex_scale)},
-				0.0,
-				tex_scale,
-				rl.WHITE,
-			)
-			rl.DrawText(fmt.ctprint(slot.count), 10, i32(30 + i * 16 * tex_scale), 16, rl.RAYWHITE)
-			i += 1
-		}
-	}
+	draw_inventory()
 
 	rl.DrawText(fmt.ctprint("fps:", fps), 10, h - 30, 20, rl.RED)
 	rl.DrawText(fmt.ctprint("dt:", dt), 10, h - 50, 20, rl.RED)
