@@ -1,0 +1,65 @@
+name: Build and Release
+
+on:
+    push:
+        tags:
+            - "v*.*.*" # Triggers only on version tags like v1.0.0
+
+jobs:
+    build:
+        name: Build (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-22.04]
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Install Dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y \
+                    git \
+                    build-essential \
+                    gcc-multilib \
+                    mingw-w64 \
+                    libx11-dev \
+                    libxrandr-dev \
+                    libxinerama-dev \
+                    libxcursor-dev \
+                    libxi-dev \
+                    libgl1-mesa-dev
+
+            - name: Install Odin Compiler
+              run: |
+                  git clone --depth 1 https://github.com/odin-lang/Odin.git
+                  cd Odin
+                  make
+                  echo "$GITHUB_WORKSPACE/Odin" >> $GITHUB_PATH
+                  cd ..
+
+            - name: Build for Linux
+              run: |
+                  odin build . -file -out:game_linux -target:linux_amd64
+
+            - name: Build for Windows
+              run: |
+                  odin build . -file -out:game.exe -target:windows_amd64 -vet -disable-assert
+
+            - name: Prepare Artifacts
+              run: |
+                  mkdir -p build_output/linux build_output/windows
+                  mv game_linux build_output/linux/
+                  mv game.exe build_output/windows/
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: |
+                      build_output/linux/game_linux
+                      build_output/windows/game.exe
+                  prerelease: true
+                  draft: false
