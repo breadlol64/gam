@@ -43,11 +43,11 @@ jobs:
 
             - name: Build for Linux
               run: |
-                  odin build src/ -file -out:game_linux -target:linux_amd64
+                  odin build . -file -out:game_linux -target:linux_amd64
 
             - name: Build for Windows
               run: |
-                  odin build src/ -file -out:game.exe -target:windows_amd64 -vet -disable-assert
+                  odin build . -file -out:game.exe -target:windows_amd64 -vet -disable-assert
 
             - name: Prepare Artifacts
               run: |
