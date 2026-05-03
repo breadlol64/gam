@@ -1,7 +1,6 @@
 package main
 import "core:fmt"
-import "core:os"
-import "core:path/filepath"
+import "core:slice"
 import "core:strings"
 import rl "vendor:raylib"
 
@@ -9,8 +8,11 @@ import rl "vendor:raylib"
 tile_registry: map[string]TileDef
 
 TileDef :: struct {
-	name:    string,
-	texture: rl.Texture2D,
+	name:           string,
+	breakable:      bool,
+	breakable_with: []string,
+	drops:          map[string]int,
+	texture:        rl.Texture2D,
 }
 
 Tile :: struct {
@@ -20,23 +22,29 @@ Tile :: struct {
 	//meta: map[string]MetaType
 }
 
-load_tiles :: proc() {
-	handle, err := os.open("assets/tiles")
-	if err != os.ERROR_NONE do return
-	defer os.close(handle)
-
-	files, _ := os.read_dir(handle, -1, context.allocator)
-
-	for f in files {
-		if filepath.ext(f.name) != ".png" do continue
-
-		name := filepath.short_stem(f.name)
-
-		tex := rl.LoadTexture(strings.clone_to_cstring(f.fullpath))
-
-		tile_registry[name] = TileDef{name, tex}
-		fmt.printfln("loaded %s", name)
+register_tile :: proc(
+	id: string,
+	drops: map[string]int,
+	breakable: bool,
+	breakable_with: []string,
+) {
+	tile_registry[id] = {
+		id,
+		breakable,
+		slice.clone(breakable_with),
+		drops,
+		rl.LoadTexture(fmt.ctprintf("assets/tiles/%s.png", id)),
 	}
+}
+
+load_tiles :: proc() {
+	register_tile("grass", {}, false, {})
+	register_tile("planks", {}, true, {})
+	register_tile("sand", {}, false, {})
+	tree_drops: map[string]int
+	tree_drops["wood"] = 5
+	register_tile("tree", tree_drops, true, []string{"flint_axe"})
+	register_tile("water", {}, false, {})
 }
 
 draw_tiles :: proc() {

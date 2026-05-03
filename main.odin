@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:slice"
 import rl "vendor:raylib"
 
 tex_size :: 16
@@ -14,6 +15,7 @@ Player :: struct {
 	camera:    rl.Camera2D,
 	texture:   rl.Texture2D,
 	inventory: [10]InventorySlot,
+	hand:      int, // index to inventory
 }
 
 world: [2][dynamic]Tile
@@ -31,9 +33,9 @@ main :: proc() {
 	player.camera = rl.Camera2D{{400, 300}, {f32(player.x), f32(player.y)}, 0.0, 1.0}
 	player.texture = rl.LoadTexture("assets/player.png")
 	player.inventory = {}
+	player.hand = 0
 
-	add_item(Item{"wood"}, 35)
-	add_item(Item{"wood"}, 5)
+	add_item({"flint_axe"}, 1)
 	fmt.println(player.inventory)
 
 	seed := rl.GetRandomValue(0, 2000000000)
@@ -64,6 +66,38 @@ input :: proc(dt: f32) {
 	}
 	if rl.IsKeyDown(.D) {
 		player.x += player_speed * dt
+	}
+
+	if rl.IsMouseButtonPressed(.LEFT) {
+		m := rl.GetMousePosition()
+		w := rl.GetScreenToWorld2D(m, player.camera)
+		x, y := to_tile_coords(w.x, w.y)
+		if idx, ok := tile_map[1][{x, y}]; ok {
+			tile := world[1][idx]
+			if def, ok := tile_registry[tile.id]; ok {
+				fmt.println(player.inventory[player.hand].item.id)
+				fmt.println(
+					slice.contains(def.breakable_with, player.inventory[player.hand].item.id),
+				)
+				// fmt.println(def.breakable_with)
+				if def.breakable &&
+				   slice.contains(def.breakable_with, player.inventory[player.hand].item.id) {
+					unordered_remove(&world[1], idx)
+					delete_key(&tile_map[1], [2]int{int(tile.x), int(tile.y)})
+
+					for drop, count in def.drops {
+						add_item({drop}, count)
+					}
+				}
+			}
+		}
+	}
+
+	key := rl.GetKeyPressed()
+	if key >= .ONE && key <= .NINE {
+		player.hand = int(key) - int(rl.KeyboardKey.ONE)
+	} else if key == .ZERO {
+		player.hand = 9
 	}
 
 	if rl.IsKeyDown(.I) {

@@ -40,4 +40,12 @@ draw_inventory :: proc() {
 			i += 1
 		}
 	}
+
+	rl.DrawRectangleLines(
+		10,
+		i32(30 + player.hand * 16 * tex_scale),
+		16 * tex_scale,
+		16 * tex_scale,
+		rl.GRAY,
+	)
 }
